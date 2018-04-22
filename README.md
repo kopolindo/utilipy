@@ -2,7 +2,7 @@
 Read from corrupted log, use data and report unrecoverable errors
 
 LANG
-	Python2.7
+Python2.7
 
 GOAL
 - Read from corrupted log files
