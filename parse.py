@@ -1,5 +1,6 @@
 import os,re,sys,cStringIO
 
+recover_file="out.txt"
 f=open("log.txt","rb")
 fm=cStringIO.StringIO()
 
@@ -22,7 +23,7 @@ while not err:
 		line=buffer[i]
 		print("query su mem "+line)
 		if "ERR" in line:
-			with open("out.txt","r+") as o:
+			with open(recover_file,"r+") as o:
 				for l in o.read().split("\n"):
 					if l==line:
 						break
