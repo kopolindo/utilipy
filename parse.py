@@ -64,6 +64,7 @@ def seek_and_append_with_set(recover_file_path, buff):
                 f.write(line + '\n')
     return i, lines
 
+
 if __name__ == '__main__':
 
     fm = clean_file(input_file_name)
