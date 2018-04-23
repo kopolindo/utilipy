@@ -3,9 +3,8 @@ import os
 import re
 import sys
 
-recover_file = "out.txt"
-f = open("log.txt", "rb")
-
+recover_file_name = "out.txt"
+input_file_name = 'log.txt'
 
 def clean_file(file_path):
     fm = cStringIO.StringIO()
@@ -27,6 +26,7 @@ def make_recover_if_not_exists(file_path):
 
 
 def seek_and_append_no_set(recover_file_path, buff):
+    make_recover_if_not_exists(recover_file_path)
     i = None
     lines = []
     with open(recover_file_path, "r+") as recoverf:
@@ -50,7 +50,7 @@ def seek_and_append_with_set(recover_file_path, buff):
     lines = []
     # open the file and load the lines in a set
     with open(recover_file_path, 'r') as f:
-        recover_file_lines = set([l for l in f])
+        recover_file_lines = set([l.strip() for l in f])
 
     with open(recover_file_path, 'a+') as f:
         for i, line in enumerate(buff):
@@ -58,17 +58,15 @@ def seek_and_append_with_set(recover_file_path, buff):
                 continue
             print "Query su mem: %s" % line
             lines.append(line)
-            if 'ERR' in line:
-                if line not in recover_file_lines:
-                    recover_file_lines.add(line)
-                    f.write(line + '\n')
+            if 'ERR' in line and line not in recover_file_lines:
+                recover_file_lines.add(line)
+                f.write(line + '\n')
     return i, lines
 
 
 if __name__ == '__main__':
 
-    fm = clean_file("log.txt")
-    make_recover_if_not_exists(recover_file)
+    fm = clean_file(input_file_name)
 
     try:
         buff = fm.getvalue()
@@ -78,7 +76,7 @@ if __name__ == '__main__':
 
     buff = re.sub(r'\n([^"])', r'\1', buff).split("\n")
 
-    ctr, goodlines = seek_and_append_with_set(recover_file, buff)
+    ctr, goodlines = seek_and_append_with_set(recover_file_name, buff)
 
     sys.exit(0)
 
