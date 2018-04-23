@@ -6,6 +6,7 @@ import sys
 recover_file_name = "out.txt"
 input_file_name = 'log.txt'
 
+
 def clean_file(file_path):
     fm = cStringIO.StringIO()
     if not os.path.isfile(file_path):
@@ -62,7 +63,6 @@ def seek_and_append_with_set(recover_file_path, buff):
                 recover_file_lines.add(line)
                 f.write(line + '\n')
     return i, lines
-
 
 if __name__ == '__main__':
 
