@@ -1,8 +1,7 @@
 import cStringIO
 import os
-import sys
 import re
-
+import sys
 
 recover_file = "out.txt"
 f = open("log.txt", "rb")
