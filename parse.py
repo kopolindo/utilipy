@@ -1,35 +1,79 @@
-import os,re,sys,cStringIO
+import cStringIO
+import os
+import sys
+import re
 
-recover_file="out.txt"
-f=open("log.txt","rb")
-fm=cStringIO.StringIO()
 
-for line in f:
-	if line.strip() != '':
-		out=line.replace(u'\u001a',' ')
-		fm.write(out)
-f.close() 
-try:
-	buffer=fm.getvalue()
-except Exception:
-	print(str(Exception))
-	sys.exit(1)
-buffer=re.sub(r'\n([^"])',r'\1',buffer).split("\n")
-err=False
-i=0
-length=len(buffer)
-while not err:
-	if i<length:
-		line=buffer[i]
-		print("query su mem "+line)
-		if "ERR" in line:
-			with open(recover_file,"r+") as o:
-				for l in o.read().split("\n"):
-					if l==line:
-						break
-					elif not l.strip() or l.strip() == str(""):
-						o.seek(0,2)
-						o.write(line+"\n")
-		i+=1
-	elif i==length:
-		sys.exit(0)
+recover_file = "out.txt"
+f = open("log.txt", "rb")
+
+
+def clean_file(file_path):
+    fm = cStringIO.StringIO()
+    if not os.path.isfile(file_path):
+        return fm
+    with open(file_path) as input_file:
+        for line in input_file:
+            # if line is contains printable chars
+            if line.strip() != '':
+                out = line.replace(u'\u001a', ' ')
+                fm.write(out)
+    return fm
+
+
+def make_recover_if_not_exists(file_path):
+    if not os.path.exists(file_path):
+        with open(file_path, 'a+'):
+            pass
+
+
+def seek_and_append_no_set(recover_file_path, buff):
+    i = None
+    with open(recover_file_path, "r+") as recoverf:
+        for i, line in enumerate(buff):
+            print "Query su mem: %s" % line
+            if "ERR" in line:
+                # not fan of re-seeking the entire file
+                for recoverl in recoverf:
+                    if recoverl == line:
+                        break
+                    # ?
+                    elif not recoverl.strip() or recoverl.strip() == '':
+                        recoverf.seek(0, 2)
+                        recoverf.write(line + '\n')
+    return i
+
+
+def seek_and_append_with_set(recover_file_path, buff):
+    i = None
+    # open the file and load the lines in a set
+    with open(recover_file_path, 'r') as f:
+        recover_file_lines = set([l for l in f])
+
+    with open(recover_file_path, 'a+') as f:
+        for i, line in enumerate(buff):
+            print "Query su mem: %s" % line
+            if 'ERR' in line:
+                if line not in recover_file_lines and line.strip() != '':
+                    recover_file_lines.add(line)
+                    f.write(line + '\n')
+    return i
+
+
+if __name__ == '__main__':
+
+    fm = clean_file("log.txt")
+    make_recover_if_not_exists(recover_file)
+
+    try:
+        buff = fm.getvalue()
+    except Exception as e:
+        print e
+        sys.exit(-1)
+
+    buff = re.sub(r'\n([^"])', r'\1', buff).split("\n")
+
+    ctr = seek_and_append_with_set(recover_file, buff)
+
+    sys.exit(0)
+
