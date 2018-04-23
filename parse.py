@@ -29,9 +29,11 @@ def make_recover_if_not_exists(file_path):
 
 def seek_and_append_no_set(recover_file_path, buff):
     i = None
+    lines = []
     with open(recover_file_path, "r+") as recoverf:
         for i, line in enumerate(buff):
             print "Query su mem: %s" % line
+            lines.append(line)
             if "ERR" in line:
                 # not fan of re-seeking the entire file
                 for recoverl in recoverf:
@@ -41,23 +43,27 @@ def seek_and_append_no_set(recover_file_path, buff):
                     elif not recoverl.strip() or recoverl.strip() == '':
                         recoverf.seek(0, 2)
                         recoverf.write(line + '\n')
-    return i
+    return i, lines
 
 
 def seek_and_append_with_set(recover_file_path, buff):
     i = None
+    lines = []
     # open the file and load the lines in a set
     with open(recover_file_path, 'r') as f:
         recover_file_lines = set([l for l in f])
 
     with open(recover_file_path, 'a+') as f:
         for i, line in enumerate(buff):
+            if line.strip() == '':
+                continue
             print "Query su mem: %s" % line
+            lines.append(line)
             if 'ERR' in line:
-                if line not in recover_file_lines and line.strip() != '':
+                if line not in recover_file_lines:
                     recover_file_lines.add(line)
                     f.write(line + '\n')
-    return i
+    return i, lines
 
 
 if __name__ == '__main__':
@@ -73,7 +79,7 @@ if __name__ == '__main__':
 
     buff = re.sub(r'\n([^"])', r'\1', buff).split("\n")
 
-    ctr = seek_and_append_with_set(recover_file, buff)
+    ctr, goodlines = seek_and_append_with_set(recover_file, buff)
 
     sys.exit(0)
 
